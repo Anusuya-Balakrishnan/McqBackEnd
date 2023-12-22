@@ -16,7 +16,7 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 class CreateUserView(generics.CreateAPIView):
     queryset = UserModel.objects.all()
     serializer_class = UserModelSerializer
-    def create_user(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         # Extract parameters from the request data
         username = request.data.get('username')
         age = request.data.get('age')
