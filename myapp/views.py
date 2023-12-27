@@ -3,8 +3,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
-from .models import UserModel
-from .serializers import UserModelSerializer
+from .models import UserModel,Student
+from .serializers import UserModelSerializer,StudentSerializer,StudentSignInSerializer
+from rest_framework.authtoken.models import Token
 
 
 
@@ -39,6 +40,37 @@ def person(request):
             return Response(serializer.data)
         else:
             return Response(serializer.error)
+
+
+# http://127.0.0.1:8000/mcq/student/
+# this api is used to create a student using post method
+# using the same api ,we can get all student data by using get method
+@api_view(["POST","GET"])
+def student(request):
+    if(request.method=="POST"):
+        data=request.data
+        serializer=StudentSerializer(data=data)
+        if(serializer.is_valid()):
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response({"Error":"invalid user"})
+    elif(request.method=="GET"):
+        obj=Student.objects.all()
+        serializer=StudentSerializer(obj,many=True)
+        return Response(serializer.data)
+
+@api_view(["POST"])
+def studentLogin(request):
+    if(request.method=="POST"):
+        serializer = StudentSignInSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        token, created = Token.objects.get_or_create(user=email)
+
+        return Response({'token': token.key}, status=status.HTTP_200_OK)
+
+
 
 # class UserListView(generics.ListCreateAPIView):
 #     queryset = UserModel.objects.all()
