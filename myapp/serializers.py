@@ -2,6 +2,29 @@ from rest_framework import serializers
 from .models import UserModel,Student
 from django.contrib.auth import authenticate
 
+from django.contrib.auth import get_user_model
+from knox.auth import TokenAuthentication
+
+User = get_user_model()
+
+class EmailAuthTokenSerializer(AuthTokenSerializer):
+    def validate(self, attrs):
+        email = attrs.get('email')
+        
+
+        if email :
+            user = User.objects.filter(email=email).first()
+            if user:
+                attrs['user'] = user
+            else:
+                msg = 'Unable to log in with provided credentials.'
+                raise serializers.ValidationError(msg)
+        else:
+            msg = 'Must include "email" and "password".'
+            raise serializers.ValidationError(msg)
+
+        return attrs
+
 class UserModelSerializer(serializers.Serializer):
     username=serializers.CharField()
     age=serializers.IntegerField()
@@ -27,24 +50,29 @@ class StudentSerializer(serializers.Serializer):
         return Student.objects.create(**data)
 
 
-class StudentSignInSerializer(serializers.Serializer):
+
+class SiginSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
 
-    def validate(self, data):
-        email = data.get('email')
-        password = data.get('password')
 
-        if email and password:
-            user = authenticate(request=self.context.get('request'), email=email, password=password)
+# class StudentSignInSerializer(serializers.Serializer):
+#     email = serializers.EmailField()
+#     password = serializers.CharField(write_only=True)
 
-            if not user:
-                msg = 'Unable to log in with provided credentials.'
-                raise serializers.ValidationError(msg, code='authorization')
+#     def validate(self, data):
+#         email = data.get('email')
+#         password = data.get('password')
 
-        else:
-            msg = 'Must include "email" and "password".'
-            raise serializers.ValidationError(msg, code='authorization')
+#         if email and password:
+#             user = authenticate(request=self.context.get('request'), email=email, password=password)
 
-        data['user'] = user
-        return data
+#             if not user:
+#                 msg = 'Unable to log in with provided credentials.'
+#                 raise serializers.ValidationError(msg, code='authorization')
+
+#         else:
+#             msg = 'Must include "email" and "password".'
+#             raise serializers.ValidationError(msg, code='authorization')
+
+#         data['user'] = user
+#         return data

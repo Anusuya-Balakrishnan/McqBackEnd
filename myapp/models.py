@@ -1,4 +1,5 @@
 from djongo import models
+# from django.contrib.auth.models import AbstractUser
 
 # from django.db import models
 
@@ -31,3 +32,8 @@ class Student(models.Model):
     
 
     
+# class StudentLogin(AbstractUser):
+#     email = models.EmailField(unique=True)
+
+#     def get_username(self):
+#         return self.email

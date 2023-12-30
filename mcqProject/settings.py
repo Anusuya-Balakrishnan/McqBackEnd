@@ -38,7 +38,21 @@ INSTALLED_APPS = ['rest_framework',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "myapp",
+    "knox"
     
+]
+
+# this dictionary added for knox library
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'knox.auth.TokenAuthentication',
+    ),
+}
+
+AUTHENTICATION_BACKENDS = [
+    'myapp.emailAuthenticate.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 MIDDLEWARE = [
@@ -133,3 +147,4 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
