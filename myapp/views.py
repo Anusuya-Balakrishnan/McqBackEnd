@@ -1,15 +1,14 @@
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from knox.models import AuthToken
 from rest_framework import status
 from rest_framework import generics
-from .models import UserModel,Student
-from .serializers import UserModelSerializer,StudentSerializer,SiginSerializer,EmailAuthTokenSerializer
-from rest_framework.authtoken.models import Token
+from .models import UserModel,Student,Login
+from .serializers import UserModelSerializer,StudentSerializer,LoginSerializer
 
-from rest_framework.authtoken.serializers import AuthTokenSerializer
-from knox.auth import AuthToken
-from .emailAuthenticate import EmailBackend
+# from .emailAuthenticate import EmailBackend
 
 @api_view(["GET","POST"])
 def person(request):
@@ -63,59 +62,101 @@ def student(request):
         return Response(serializer.data)
 
 @api_view(['POST'])
-def signin(request):
-    # Deserialize the input data
-    serializer = SiginSerializer(data=request.data)
-    
+@permission_classes([AllowAny])
+def register_user(request):
+    serializer = LoginSerializer(data=request.data)
     if serializer.is_valid():
-        # Get the validated data
-        email = serializer.validated_data['email']
-        _, token = AuthToken.objects.create(serializer)
-        return Response({
-                "user": {
-                    
-                    "email": email.email,
-                    # Include other user attributes as needed
-                },
-                "token": token
-            })
-        # For simplicity, let's just return the extracted username in the response
-        # return Response({'message': f'Validated email: {email}'}, status=status.HTTP_200_OK)
-    else:
-        # Invalid input data
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+        user = serializer.save()
+        _, token = AuthToken.objects.create(user)
+        return Response({'user': serializer.data, 'token': token})
+    return Response(serializer.errors, status=400)
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
+def obtain_token(request):
+    serializer = LoginSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = serializer.validated_data
+    _, token = AuthToken.objects.create(user)
+    return Response({'user': serializer.data, 'token': token})
 
-def studentLogin(request):
-    if(request.method=="POST"):
-        # user_email=request.data.get("email")
-        # user = EmailBackend().authenticate(request, email=user_email)
-        # print("useruser",user)
-        # if user is not None:
-        #     _, token = AuthToken.objects.create(user)
-        #     return Response({
-        #         "user": {
+@api_view(['POST'])
+def myTesting(req):
+    serializer = LoginSerializer(data=req.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        print(user)
+    # _, token = AuthToken.objects.create({"name":"thamizhhd"})
+    # print(token)
+    return Response("HI")
+
+
+
+# @api_view(["POST"])
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
+# def loginFunction(request):
+#     email=request.data.email
+#     serializer=LoginSerializer(email)
+#     if(serializer.is_valid()):
+#         return Response(serializer.data)
+#     else:
+#         return Response(serializer.error) 
+
+# @api_view(['POST'])
+# def signin(request):
+#     # Deserialize the input data
+#     serializer = SiginSerializer(data=request.data)
+    
+#     if serializer.is_valid():
+#         # Get the validated data
+#         email = serializer.validated_data['email']
+#         _, token = AuthToken.objects.create(serializer)
+#         return Response({
+#                 "user": {
                     
-        #             "email": user.email,
-        #             # Include other user attributes as needed
-        #         },
-        #         "token": token
-        #     })
-        # else:
-        #     return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-        serializer=EmailAuthTokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        student=serializer.validated_data['student']
+#                     "email": email.email,
+#                     # Include other user attributes as needed
+#                 },
+#                 "token": token
+#             })
+#         # For simplicity, let's just return the extracted username in the response
+#         # return Response({'message': f'Validated email: {email}'}, status=status.HTTP_200_OK)
+#     else:
+#         # Invalid input data
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        _,token=AuthToken.objects.create(student)
 
-        return Response({
-            "user_email":student.email,
-            "token":token
-        })
+
+# @api_view(['POST'])
+
+# def studentLogin(request):
+#     if(request.method=="POST"):
+#         # user_email=request.data.get("email")
+#         # user = EmailBackend().authenticate(request, email=user_email)
+#         # print("useruser",user)
+#         # if user is not None:
+#         #     _, token = AuthToken.objects.create(user)
+#         #     return Response({
+#         #         "user": {
+                    
+#         #             "email": user.email,
+#         #             # Include other user attributes as needed
+#         #         },
+#         #         "token": token
+#         #     })
+#         # else:
+#         #     return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+#         serializer=EmailAuthTokenSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         student=serializer.validated_data['student']
+
+#         _,token=AuthToken.objects.create(student)
+
+#         return Response({
+#             "user_email":student.email,
+#             "token":token
+#         })
 # @api_view(["POST"])
 # def studentLogin(request):
 #     if(request.method=="POST"):

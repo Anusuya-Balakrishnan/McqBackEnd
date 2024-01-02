@@ -1,29 +1,27 @@
 from rest_framework import serializers
-from .models import UserModel,Student
-from django.contrib.auth import authenticate
-
 from django.contrib.auth import get_user_model
-from knox.auth import TokenAuthentication
 
-User = get_user_model()
+from .models import UserModel,Student
 
-class EmailAuthTokenSerializer(AuthTokenSerializer):
-    def validate(self, attrs):
-        email = attrs.get('email')
+# User = get_user_model()
+
+# class EmailAuthTokenSerializer(AuthTokenSerializer):
+#     def validate(self, attrs):
+#         email = attrs.get('email')
         
 
-        if email :
-            user = User.objects.filter(email=email).first()
-            if user:
-                attrs['user'] = user
-            else:
-                msg = 'Unable to log in with provided credentials.'
-                raise serializers.ValidationError(msg)
-        else:
-            msg = 'Must include "email" and "password".'
-            raise serializers.ValidationError(msg)
+#         if email :
+#             user = User.objects.filter(email=email).first()
+#             if user:
+#                 attrs['user'] = user
+#             else:
+#                 msg = 'Unable to log in with provided credentials.'
+#                 raise serializers.ValidationError(msg)
+#         else:
+#             msg = 'Must include "email" and "password".'
+#             raise serializers.ValidationError(msg)
 
-        return attrs
+#         return attrs
 
 class UserModelSerializer(serializers.Serializer):
     username=serializers.CharField()
@@ -34,6 +32,7 @@ class UserModelSerializer(serializers.Serializer):
         return UserModel.objects.create(**data)
 
 class StudentSerializer(serializers.Serializer):
+    
     name=serializers.CharField()
     date=serializers.DateField()
     dob=serializers.DateField()
@@ -51,8 +50,28 @@ class StudentSerializer(serializers.Serializer):
 
 
 
-class SiginSerializer(serializers.Serializer):
+class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
+    name=serializers.CharField()
+    date=serializers.DateField()
+
+    def validate_email(self, email):
+        user = get_user_model()
+        # print(user)
+        print("sdfdassdafsafas",user.get_email_field_name)
+        # Check if the email is unique in your database
+        print( user.objects.filter(email=email).exists())
+        if user.objects.filter(email=email).exists():
+            print("Hello")
+            # raise serializers.ValidationError("This email is already in use.")
+
+        # Add any other custom validation logic here
+
+        return user
+    def create(self, validated_data):
+        # Create and return a new user instance using the validated data
+        return get_user_model().objects.create(**validated_data)
+
 
 
 # class StudentSignInSerializer(serializers.Serializer):
