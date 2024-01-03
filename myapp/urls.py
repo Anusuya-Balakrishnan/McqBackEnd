@@ -8,8 +8,8 @@ urlpatterns = [
 
     path("user/",views.person,name="person"),
     path("student/",views.student,name="student"),
-    path("register_user/",views.register_user,name="register_user"),
-    path("obtain_token/",views.obtain_token,name="obtain_token"),
+    # path("register_user/",views.register_user,name="register_user"),
+    # path("obtain_token/",views.obtain_token,name="obtain_token"),
     path("my_test/",views.myTesting,name="my_test"),
     # path('signin/', views.signin, name='user-signin'),
     # path('studentLogin/',views.studentLogin,name="student_login")

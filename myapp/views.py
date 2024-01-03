@@ -1,12 +1,13 @@
 
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from knox.models import AuthToken
+# from rest_framework.permissions import AllowAny
+# from knox.models import AuthToken
 from rest_framework import status
-from rest_framework import generics
-from .models import UserModel,Student,Login
-from .serializers import UserModelSerializer,StudentSerializer,LoginSerializer
+# from rest_framework import generics
+from rest_framework.authtoken.models import Token
+from .models import UserModel,Student
+from .serializers import UserModelSerializer,StudentSerializer
 
 # from .emailAuthenticate import EmailBackend
 
@@ -51,9 +52,12 @@ def student(request):
     if(request.method=="POST"):
         data=request.data
         serializer=StudentSerializer(data=data)
-        if(serializer.is_valid()):
+        print("data",serializer.is_valid())
+        if(serializer.is_valid(raise_exception=True)):
             serializer.save()
-            return Response(serializer.data)
+            user=Student.objects.get(name=request.data['name'])
+            token=Token.objects.get_or_create(user=user)
+            return Response({"token":token.key,"user":serializer.data})
         else:
             return Response({"Error":"invalid user"})
     elif(request.method=="GET"):
@@ -61,24 +65,24 @@ def student(request):
         serializer=StudentSerializer(obj,many=True)
         return Response(serializer.data)
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def register_user(request):
-    serializer = LoginSerializer(data=request.data)
-    if serializer.is_valid():
-        user = serializer.save()
-        _, token = AuthToken.objects.create(user)
-        return Response({'user': serializer.data, 'token': token})
-    return Response(serializer.errors, status=400)
+# @api_view(['POST'])
+# @permission_classes([AllowAny])
+# def register_user(request):
+#     serializer = LoginSerializer(data=request.data)
+#     if serializer.is_valid():
+#         user = serializer.save()
+#         _, token = AuthToken.objects.create(user)
+#         return Response({'user': serializer.data, 'token': token})
+#     return Response(serializer.errors, status=400)
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def obtain_token(request):
-    serializer = LoginSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    user = serializer.validated_data
-    _, token = AuthToken.objects.create(user)
-    return Response({'user': serializer.data, 'token': token})
+# @api_view(['POST'])
+# @permission_classes([AllowAny])
+# def obtain_token(request):
+#     serializer = LoginSerializer(data=request.data)
+#     serializer.is_valid(raise_exception=True)
+#     user = serializer.validated_data
+#     _, token = AuthToken.objects.create(user)
+#     return Response({'user': serializer.data, 'token': token})
 
 @api_view(['POST'])
 def myTesting(req):

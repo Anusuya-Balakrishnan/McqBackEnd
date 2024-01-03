@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
+# from django.contrib.auth import get_user_model
 
 from .models import UserModel,Student
 
@@ -31,46 +31,49 @@ class UserModelSerializer(serializers.Serializer):
     def create(self, data):
         return UserModel.objects.create(**data)
 
-class StudentSerializer(serializers.Serializer):
-    
-    name=serializers.CharField()
-    date=serializers.DateField()
-    dob=serializers.DateField()
-    mobileNumber=serializers.IntegerField()
-    address=serializers.CharField()
-    qualification=serializers.CharField()
-    nationality=serializers.CharField()
-    workingDesignation=serializers.CharField()
-    studentCollegeName=serializers.CharField()
-    email=serializers.EmailField()
-    whatsappNumber=serializers.IntegerField()
-    gender=serializers.CharField()
-    def create(self, data):
-        return Student.objects.create(**data)
+class StudentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student
+        fields = '__all__'
+# class StudentSerializer(serializers.Serializer):
+#     name=serializers.CharField()
+#     date=serializers.DateField()
+#     dob=serializers.DateField()
+#     mobileNumber=serializers.IntegerField()
+#     address=serializers.CharField()
+#     qualification=serializers.CharField()
+#     nationality=serializers.CharField()
+#     workingDesignation=serializers.CharField()
+#     studentCollegeName=serializers.CharField()
+#     email=serializers.EmailField()
+#     whatsappNumber=serializers.IntegerField()
+#     gender=serializers.CharField()
+#     def create(self, data):
+#         return Student.objects.create(**data)
 
 
 
-class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    name=serializers.CharField()
-    date=serializers.DateField()
+# class LoginSerializer(serializers.Serializer):
+#     email = serializers.EmailField()
+#     name=serializers.CharField()
+#     date=serializers.DateField()
 
-    def validate_email(self, email):
-        user = get_user_model()
-        # print(user)
-        print("sdfdassdafsafas",user.get_email_field_name)
-        # Check if the email is unique in your database
-        print( user.objects.filter(email=email).exists())
-        if user.objects.filter(email=email).exists():
-            print("Hello")
-            # raise serializers.ValidationError("This email is already in use.")
+#     def validate_email(self, email):
+#         user = get_user_model()
+#         # print(user)
+#         print("sdfdassdafsafas",user.get_email_field_name)
+#         # Check if the email is unique in your database
+#         print( user.objects.filter(email=email).exists())
+#         if user.objects.filter(email=email).exists():
+#             print("Hello")
+#             # raise serializers.ValidationError("This email is already in use.")
 
-        # Add any other custom validation logic here
+#         # Add any other custom validation logic here
 
-        return user
-    def create(self, validated_data):
-        # Create and return a new user instance using the validated data
-        return get_user_model().objects.create(**validated_data)
+#         return user
+#     def create(self, validated_data):
+#         # Create and return a new user instance using the validated data
+#         return get_user_model().objects.create(**validated_data)
 
 
 

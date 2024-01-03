@@ -38,19 +38,20 @@ INSTALLED_APPS = ['rest_framework',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "myapp",
-    "knox"
+    # "knox",
+    "rest_framework.authtoken"
     
 ]
 
 # this dictionary added for knox library
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'knox.auth.TokenAuthentication',
-    ),
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'knox.auth.TokenAuthentication',
+#     ),
+# }
 
-AUTHENTICATION_CLASSES = ['knox.auth.TokenAuthentication']
+# AUTHENTICATION_CLASSES = ['knox.auth.TokenAuthentication']
 
 # AUTHENTICATION_BACKENDS = [
 #     'myapp.emailAuthenticate.EmailBackend',
@@ -138,8 +139,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-DJONGO_DEBUG = True
-
+# DJONGO_DEBUG = True
+DEBUG = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
@@ -150,4 +151,4 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL='myapp.Student'
+# AUTH_USER_MODEL='myapp.Student'
