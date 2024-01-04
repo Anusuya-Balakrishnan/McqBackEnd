@@ -55,7 +55,8 @@ def student(request):
         print("data",serializer.is_valid())
         if(serializer.is_valid(raise_exception=True)):
             serializer.save()
-            user=Student.objects.get(name=request.data['name'])
+            user=Student.objects.get(id=request.data["id"])
+            print("user",user)
             token=Token.objects.get_or_create(user=user)
             return Response({"token":token.key,"user":serializer.data})
         else:
