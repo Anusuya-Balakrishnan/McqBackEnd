@@ -1,8 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
-# from django.db import models
+from django.contrib.auth.models import AbstractBaseUser,AbstractUser, BaseUserManager, PermissionsMixin
 
-# from django_mongodb_engine.fields import ObjectIdField
 
 # Create your models here.
 
@@ -16,10 +14,10 @@ class UserModel(models.Model):
     
 
 class Student(models.Model):
-    # id = ObjectIdField(primary_key=True)
+    
     name=models.TextField()
-    # date=models.DateTimeField()
-    # dob=models.DateTimeField()
+    date=models.DateTimeField()
+    dob=models.DateTimeField()
     mobileNumber=models.TextField()
     address=models.TextField()
     qualification=models.TextField()
@@ -30,34 +28,48 @@ class Student(models.Model):
     whatsappNumber=models.TextField()
     gender=models.TextField()
 
-    # USERNAME_FIELD="email"
-    # REQUIRED_FIELDS = ['name','date']
-
-    # @property
-    # def is_anonymous(self):
-    #     """Always return False. This is a way of comparing User objects to anonymous users. """
-    #     return False
-    # @property
-    # def is_authenticated(self):
-    #     """Always return False. This is a way of comparing User objects to anonymous users. """
-    #     return True
-    
+   
     def __str__(self):
         return self.name
     
-    
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(email, password, **extra_fields)
+
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    name = models.TextField()
+    date = models.DateTimeField()
+    dob = models.DateTimeField()
+    mobileNumber = models.TextField()
+    address = models.TextField()
+    qualification = models.TextField()
+    nationality = models.TextField()
+    workingDesignation = models.TextField()
+    studentCollegeName = models.TextField()
+    email = models.EmailField(unique=True)
+    whatsappNumber = models.TextField()
+    gender = models.TextField()
+
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = CustomUserManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    def __str__(self):
+        return self.email
 
     
-
-
-# class Login(AbstractUser):
-#     email = models.EmailField(unique=True)
-#     name = models.TextField()
-#     date=models.DateField()
-    
-#     groups = models.ManyToManyField('auth.Group', related_name='login_users', blank=True)
-#     user_permissions = models.ManyToManyField('auth.Permission', related_name='login_users', blank=True)
-#     REQUIRED_FIELDS = ['name','date']
-    
-
-

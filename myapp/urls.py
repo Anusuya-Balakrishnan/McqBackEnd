@@ -8,13 +8,22 @@ urlpatterns = [
 
     path("user/",views.person,name="person"),
     path("student/",views.student,name="student"),
-    # path("register_user/",views.register_user,name="register_user"),
-    # path("obtain_token/",views.obtain_token,name="obtain_token"),
-    path("my_test/",views.myTesting,name="my_test"),
-    # path('signin/', views.signin, name='user-signin'),
-    # path('studentLogin/',views.studentLogin,name="student_login")
-#    path('users/', UserListView.as_view(), name='user-list'),
-#     path('users/<int:pk>/', UserDetailView.as_view(), name='user-detail'),
-#     path('create_user/', CreateUserView.as_view(), name='create-user'),
-    # path('custom_create_user/', CreateUserView.as_view({'post': 'create_user'}), name='custom-create-user'),
+    path('users/', views.custom_user_list, name='custom_user_list'),
+    path('users/<str:name>/', views.custom_user_detail, name='custom_user_detail'),
 ]
+
+
+# {
+# "name":"siva",
+# "date":"2024-01-05",
+# "dob":"1995-12-26",
+# "mobileNumber":"9489645465",
+# "address":"pondy",
+# "qualification":"B.Tech",
+# "nationality":"Indian",
+# "workingDesignation":"developer",
+# "studentCollegeName":"christ",
+# "email":"siva@gmail.com",
+# "whatsappNumber":"9489645465",
+# "gender":"male"
+# }

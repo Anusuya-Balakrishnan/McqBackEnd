@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status
 # from rest_framework import generics
 from rest_framework.authtoken.models import Token
-from .models import UserModel,Student
-from .serializers import UserModelSerializer,StudentSerializer
+from .models import UserModel,Student,CustomUser
+from .serializers import UserModelSerializer,StudentSerializer,CustomUserSerializer
 
 # from .emailAuthenticate import EmailBackend
 
@@ -66,144 +66,42 @@ def student(request):
         serializer=StudentSerializer(obj,many=True)
         return Response(serializer.data)
 
-# @api_view(['POST'])
-# @permission_classes([AllowAny])
-# def register_user(request):
-#     serializer = LoginSerializer(data=request.data)
-#     if serializer.is_valid():
-#         user = serializer.save()
-#         _, token = AuthToken.objects.create(user)
-#         return Response({'user': serializer.data, 'token': token})
-#     return Response(serializer.errors, status=400)
+@api_view(['GET', 'POST'])
+def custom_user_list(request):
+    if request.method == 'GET':
+        users = CustomUser.objects.all()
+        serializer = CustomUserSerializer(users, many=True)
+        return Response(serializer.data)
 
-# @api_view(['POST'])
-# @permission_classes([AllowAny])
-# def obtain_token(request):
-#     serializer = LoginSerializer(data=request.data)
-#     serializer.is_valid(raise_exception=True)
-#     user = serializer.validated_data
-#     _, token = AuthToken.objects.create(user)
-#     return Response({'user': serializer.data, 'token': token})
+    elif request.method == 'POST':
+        serializer = CustomUserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            user = CustomUser.objects.get(name=request.data['email'])
+            print("user$$$$$$$$$$$$$$$$$$$$$",user)
+            token="HEllo"
+            # _,token=Token.objects.create(user=user)
+            return Response({"token":token.key,"user":serializer.data}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-def myTesting(req):
-    serializer = LoginSerializer(data=req.data)
-    if serializer.is_valid():
-        user = serializer.save()
-        print(user)
-    # _, token = AuthToken.objects.create({"name":"thamizhhd"})
-    # print(token)
-    return Response("HI")
+@api_view(['GET', 'PUT', 'DELETE'])
+def custom_user_detail(request, name):
+    try:
+        user = CustomUser.objects.get(name=name)
+    except CustomUser.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
+    if request.method == 'GET':
+        serializer = CustomUserSerializer(user)
+        return Response(serializer.data)
 
+    elif request.method == 'PUT':
+        serializer = CustomUserSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# @api_view(["POST"])
-# @authentication_classes([TokenAuthentication])
-# @permission_classes([IsAuthenticated])
-# def loginFunction(request):
-#     email=request.data.email
-#     serializer=LoginSerializer(email)
-#     if(serializer.is_valid()):
-#         return Response(serializer.data)
-#     else:
-#         return Response(serializer.error) 
-
-# @api_view(['POST'])
-# def signin(request):
-#     # Deserialize the input data
-#     serializer = SiginSerializer(data=request.data)
-    
-#     if serializer.is_valid():
-#         # Get the validated data
-#         email = serializer.validated_data['email']
-#         _, token = AuthToken.objects.create(serializer)
-#         return Response({
-#                 "user": {
-                    
-#                     "email": email.email,
-#                     # Include other user attributes as needed
-#                 },
-#                 "token": token
-#             })
-#         # For simplicity, let's just return the extracted username in the response
-#         # return Response({'message': f'Validated email: {email}'}, status=status.HTTP_200_OK)
-#     else:
-#         # Invalid input data
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-# @api_view(['POST'])
-
-# def studentLogin(request):
-#     if(request.method=="POST"):
-#         # user_email=request.data.get("email")
-#         # user = EmailBackend().authenticate(request, email=user_email)
-#         # print("useruser",user)
-#         # if user is not None:
-#         #     _, token = AuthToken.objects.create(user)
-#         #     return Response({
-#         #         "user": {
-                    
-#         #             "email": user.email,
-#         #             # Include other user attributes as needed
-#         #         },
-#         #         "token": token
-#         #     })
-#         # else:
-#         #     return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-#         serializer=EmailAuthTokenSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         student=serializer.validated_data['student']
-
-#         _,token=AuthToken.objects.create(student)
-
-#         return Response({
-#             "user_email":student.email,
-#             "token":token
-#         })
-# @api_view(["POST"])
-# def studentLogin(request):
-#     if(request.method=="POST"):
-#         serializer = StudentSignInSerializer(data=request.data, context={'request': request})
-#         serializer.is_valid(raise_exception=True)
-#         email = serializer.validated_data['email']
-#         token, created = Token.objects.get_or_create(user=email)
-
-#         return Response({'token': token.key}, status=status.HTTP_200_OK)
-
-
-
-# class UserListView(generics.ListCreateAPIView):
-#     queryset = UserModel.objects.all()
-#     serializer_class = UserModelSerializer
-
-# class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = UserModel.objects.all()
-#     serializer_class = UserModelSerializer
-
-# class CreateUserView(generics.CreateAPIView):
-#     queryset = UserModel.objects.all()
-#     serializer_class = UserModelSerializer
-#     def create(self, request, *args, **kwargs):
-#         # Extract parameters from the request data
-#         username = request.data.get('username')
-#         age = request.data.get('age')
-#         mark = request.data.get('mark')
-
-#         # Validate parameters
-#         if not username or not age or not mark:
-#             return Response({'error': 'Missing required parameters'}, status=status.HTTP_400_BAD_REQUEST)
-
-#         # Create a new user with the extracted parameters
-#         user_data = {
-#             'username': username,
-#             'age': age,
-#             'mark': mark,
-#         }
-
-#         serializer = self.get_serializer(data=user_data)
-#         serializer.is_valid(raise_exception=True)
-#         self.perform_create(serializer)
-#         print("serializer.data",serializer.data)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    elif request.method == 'DELETE':
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
