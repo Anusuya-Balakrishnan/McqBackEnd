@@ -8,10 +8,11 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from .models import UserModel,Student,CustomUser
 from .serializers import UserModelSerializer,StudentSerializer,CustomUserSerializer
-
+from django.shortcuts import get_object_or_404
+from rest_framework.authentication import TokenAuthentication
 # from .emailAuthenticate import EmailBackend
 
-@api_view(["GET","POST"])
+@api_view(["GET","POST","PATCH"])
 def person(request):
     if(request.method=="GET"):
         obj=UserModel.objects.all()
@@ -66,6 +67,9 @@ def student(request):
         serializer=StudentSerializer(obj,many=True)
         return Response(serializer.data)
 
+
+
+# this api is used to get all user details and register new user 
 @api_view(['GET', 'POST'])
 def custom_user_list(request):
     if request.method == 'GET':
@@ -74,29 +78,52 @@ def custom_user_list(request):
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        serializer = CustomUserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            user = CustomUser.objects.get(name=request.data['email'])
-            print("user$$$$$$$$$$$$$$$$$$$$$",user)
-            token="HEllo"
-            # _,token=Token.objects.create(user=user)
-            return Response({"token":token.key,"user":serializer.data}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = CustomUser.objects.get(email=request.data['email'])
+            return Response({"message":"person already present"})
+        except:
+            serializer = CustomUserSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                user =CustomUser.objects.get(email=request.data["email"])
+                # token="HEllo"
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({"message":"successfully added into database","token":token.key,"user":serializer.data}, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'PUT', 'DELETE'])
+
+# this api is used for login page of custom user
+@api_view(['POST'])
+def custom_user_login(request):
+    data=request.data
+    if request.method=="POST":
+        try:
+            # user=get_object_or_404(CustomUser,email=data['email'])
+            user=CustomUser.objects.get(email=data['email'])
+            print("user$$$$$$$$$$$$$$$$$$$$$$$",user)
+            serializer = CustomUserSerializer(user)
+            print("serializer",serializer)
+            token, created = Token.objects.get_or_create(user=user)
+            print("token tokentokentokentoken",token.key)
+            return Response({"message":"login successfully","token":token.key,"user":serializer.data})
+        except:
+            return Response({"message":"person not exists"},status=status.HTTP_404_NOT_FOUND)
+    
+
+# this api is used to get particular user, update fields of particular user and delete user by name 
+@api_view(['GET', 'PATCH', 'DELETE'])
 def custom_user_detail(request, name):
     try:
         user = CustomUser.objects.get(name=name)
     except CustomUser.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response({"message":"person not exist"},status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
         serializer = CustomUserSerializer(user)
         return Response(serializer.data)
 
-    elif request.method == 'PUT':
-        serializer = CustomUserSerializer(user, data=request.data)
+    elif request.method == 'PATCH':
+        serializer = CustomUserSerializer(user, data=request.data,partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -104,4 +131,22 @@ def custom_user_detail(request, name):
 
     elif request.method == 'DELETE':
         user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"message":"successfully deleted"},status=status.HTTP_204_NO_CONTENT)
+    
+
+@api_view(["POST"])
+def test_token(request):
+    authentication_classes = [TokenAuthentication]
+    if(request.method=="POST"):
+        data=request.data
+       # Retrieve the token from the request
+        try:
+            token=Token.objects.get(key=request.auth.key)
+            user=token.user
+            serializer = CustomUserSerializer(user)
+            return Response({"message":"token value","token":token.key,"user":serializer.data})
+        except:
+            return Response({"message":"error"})
+
+        
+    

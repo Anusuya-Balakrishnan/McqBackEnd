@@ -9,6 +9,8 @@ urlpatterns = [
     path("user/",views.person,name="person"),
     path("student/",views.student,name="student"),
     path('users/', views.custom_user_list, name='custom_user_list'),
+    path("userLogin/",views.custom_user_login,name='custom_login'),
+    path("test_token/",views.test_token,name="test_token"),
     path('users/<str:name>/', views.custom_user_detail, name='custom_user_detail'),
 ]
 
