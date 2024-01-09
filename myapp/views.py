@@ -110,6 +110,14 @@ def custom_user_login(request):
             return Response({"message":"person not exists"},status=status.HTTP_404_NOT_FOUND)
     
 
+
+@api_view(["POST"])
+def custom_user_logout(request):
+    if(request.method=="POST"):
+        request.user.auth_token.delete()
+        return Response({"Message":"logout successfully"})
+
+
 # this api is used to get particular user, update fields of particular user and delete user by name 
 @api_view(['GET', 'PATCH', 'DELETE'])
 def custom_user_detail(request, name):
