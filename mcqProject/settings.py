@@ -39,6 +39,7 @@ INSTALLED_APPS = ['rest_framework',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "myapp.apps.MyappConfig",
+    'corsheaders',
     # "knox",
     "rest_framework.authtoken"
     
@@ -73,8 +74,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    # Add other origins as needed
+]
 ROOT_URLCONF = 'mcqProject.urls'
 
 TEMPLATES = [
