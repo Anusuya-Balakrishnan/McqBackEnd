@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status
 # from rest_framework import generics
 from rest_framework.authtoken.models import Token
-from .models import UserModel,Student,CustomUser
-from .serializers import UserModelSerializer,StudentSerializer,CustomUserSerializer
+from .models import UserModel,Student,CustomUser,LanguageModel,TopicModel,McqListDatatModel
+from .serializers import UserModelSerializer,StudentSerializer,CustomUserSerializer,LanguageModelSerializer,TopicSerializer,McqListDataSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
 # from .emailAuthenticate import EmailBackend
@@ -156,5 +156,42 @@ def test_token(request):
         except:
             return Response({"message":"error"})
 
+
+@api_view(['GET','POST'])
+def get_mcqList(request):
+    if(request.method=="GET"):
+        mcqListdata = McqListDatatModel.objects.all()
+        serializer = McqListDataSerializer(mcqListdata, many=True)
+        return Response({"mcqList":serializer.data}) 
+    elif(request.method=="POST"):
+        try:
+            existing_mcqName = McqListDatatModel.objects.get(mcqName=request.data.get('mcqName'))
+            return Response({"message": "MCQ already created"})
+        except McqListDatatModel.DoesNotExist:
+            serializer = McqListDataSerializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                return Response({"data": serializer.data, "Message": "mcq added successfully"})
+            return Response({"Error": "invalid"})
         
-    
+
+
+@api_view(['GET','POST'])
+def get_languages(request):
+    if(request.method=="GET"):
+        languages = LanguageModel.objects.all()
+        serializer = LanguageModelSerializer(languages, many=True)
+        return Response({"languages":serializer.data}) 
+    elif(request.method=="POST"):
+        try:
+            existing_language = LanguageModel.objects.get(languageName=request.data.get('languageName'))
+            return Response({"message": "Language already created"})
+        except LanguageModel.DoesNotExist:
+            serializer = LanguageModelSerializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                return Response({"data": serializer.data, "Message": "Language added successfully"})
+            return Response({"Error": "invalid"})
+        
+            
+        

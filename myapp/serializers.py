@@ -1,7 +1,8 @@
 from rest_framework import serializers
+
 # from django.contrib.auth import get_user_model
 
-from .models import UserModel,Student,CustomUser
+from .models import UserModel,Student,CustomUser,LanguageModel,TopicModel,McqListDatatModel
 
 class UserModelSerializer(serializers.Serializer):
     username=serializers.CharField()
@@ -42,3 +43,19 @@ class CustomUserSerializer(serializers.ModelSerializer):
     def get_id(self, obj):
         # Convert the Djongo ObjectId to a string
         return str(obj.id)
+    
+
+class McqListDataSerializer(serializers.ModelSerializer):
+     class Meta:
+        model = McqListDatatModel
+        fields = '__all__'
+
+class LanguageModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LanguageModel
+        fields = '__all__'  
+
+class TopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TopicModel
+        fields = '__all__'

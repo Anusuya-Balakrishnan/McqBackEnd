@@ -12,6 +12,8 @@ urlpatterns = [
     path("userLogin/",views.custom_user_login,name='custom_login'),
     path("userLogout/",views.custom_user_logout,name="custom_logout"),
     path("test_token/",views.test_token,name="test_token"),
+    path("get_mcqList/",views.get_mcqList,name="get_mcqList"),
+    path('get_language/',views.get_languages,name='get_languages'),
     path('users/<str:name>/', views.custom_user_detail, name='custom_user_detail'),
 ]
 
