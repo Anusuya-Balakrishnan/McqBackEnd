@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+# from djongo import database
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -115,6 +116,7 @@ WSGI_APPLICATION = 'mcqProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
+        'ENFORCE_SCHEMA': True,
         'NAME': 'MCQDjangoProject',
         'HOST': 'localhost',  # MongoDB server address
         'PORT': 27017,        # MongoDB port number

@@ -13,15 +13,19 @@ urlpatterns = [
     path("userLogout/",views.custom_user_logout,name="custom_logout"),
     path("test_token/",views.test_token,name="test_token"),
     path("get_mcqList/",views.get_mcqList,name="get_mcqList"),
-    path('get_language/',views.get_languages,name='get_languages'),
+    path('add_languages/',views.add_languages,name='add_languages'),
+    path('get_language/<int:mcqId>/',views.get_languages,name='get_languages'),
+    path('add_topic/',views.add_topic,name='add_topic'),
+    path('get_topic/<int:languageId>/',views.get_topic,name='get_topic'),
+    path('add_questions/',views.add_questions,name="add_questions"),
+    path('get_questions/<int:languageId>/<int:topicId>/',views.get_questions,name='get_questions'),
     path('users/<str:name>/', views.custom_user_detail, name='custom_user_detail'),
 ]
 
-
 # {
-# "name":"siva",
-# "date":"2024-01-05",
-# "dob":"1995-12-26",
+# "studentName":"siva",
+# "date":"2022-01-18T12:30:45.123Z",
+# "dob":"1990-05-15T08:00:00+02:00",
 # "mobileNumber":"9489645465",
 # "address":"pondy",
 # "qualification":"B.Tech",
@@ -31,4 +35,12 @@ urlpatterns = [
 # "email":"siva@gmail.com",
 # "whatsappNumber":"9489645465",
 # "gender":"male"
+# }
+
+# {"languageId":1,
+# "topicId":1,
+# "questions":{"question":"Who invented Java Programming?","option":["Guido van Rossum","James Gosling","Dennis Ritchie","Bjarne Stroustrup"],"answer":"James Gosling"},
+# "level":"beginner",
+# "mark":1,
+# "time":1.1
 # }

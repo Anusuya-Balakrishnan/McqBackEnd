@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 # from django.contrib.auth import get_user_model
 
-from .models import UserModel,Student,CustomUser,LanguageModel,TopicModel,McqListDatatModel
+from .models import *
 
 class UserModelSerializer(serializers.Serializer):
     username=serializers.CharField()
@@ -36,7 +36,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
     class Meta:
         model = CustomUser
-        fields = ('id', 'name', 'date', 'dob', 'mobileNumber', 'address', 'qualification',
+        fields = ('id', 'studentName', 'date', 'dob', 'mobileNumber', 'address', 'qualification',
                   'nationality', 'workingDesignation', 'studentCollegeName', 'email',
                   'whatsappNumber', 'gender', 'is_active', 'is_staff')
         read_only_fields = ('id', 'is_active', 'is_staff')
@@ -58,4 +58,9 @@ class LanguageModelSerializer(serializers.ModelSerializer):
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = TopicModel
+        fields = '__all__'
+
+class QuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=QuestionModel
         fields = '__all__'

@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status
 # from rest_framework import generics
 from rest_framework.authtoken.models import Token
-from .models import UserModel,Student,CustomUser,LanguageModel,TopicModel,McqListDatatModel
-from .serializers import UserModelSerializer,StudentSerializer,CustomUserSerializer,LanguageModelSerializer,TopicSerializer,McqListDataSerializer
+from .models import *
+from .serializers import *
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
 # from .emailAuthenticate import EmailBackend
@@ -102,9 +102,8 @@ def custom_user_login(request):
             user=CustomUser.objects.get(email=data['email'])
             print("user$$$$$$$$$$$$$$$$$$$$$$$",user)
             serializer = CustomUserSerializer(user)
-            print("serializer",serializer)
+           
             token, created = Token.objects.get_or_create(user=user)
-            print("token tokentokentokentoken",token.key)
             return Response({"message":"login successfully","token":token.key,"user":serializer.data})
         except:
             return Response({"message":"person not exists"},status=status.HTTP_404_NOT_FOUND)
@@ -122,7 +121,7 @@ def custom_user_logout(request):
 @api_view(['GET', 'PATCH', 'DELETE'])
 def custom_user_detail(request, name):
     try:
-        user = CustomUser.objects.get(name=name)
+        user = CustomUser.objects.get(studentName=name)
     except CustomUser.DoesNotExist:
         return Response({"message":"person not exist"},status=status.HTTP_404_NOT_FOUND)
 
@@ -159,39 +158,133 @@ def test_token(request):
 
 @api_view(['GET','POST'])
 def get_mcqList(request):
-    if(request.method=="GET"):
-        mcqListdata = McqListDatatModel.objects.all()
-        serializer = McqListDataSerializer(mcqListdata, many=True)
-        return Response({"mcqList":serializer.data}) 
-    elif(request.method=="POST"):
+    try:
+        token=Token.objects.get(key=request.auth.key)
+        user=token.user
+        serializer = CustomUserSerializer(user)
+        if(request.method=="GET"):
+            mcqListdata = McqListDatatModel.objects.all()
+            serializer = McqListDataSerializer(mcqListdata, many=True)
+            return Response({"mcqList":serializer.data}) 
+        elif(request.method=="POST"):
+            try:
+                existing_mcqName = McqListDatatModel.objects.get(mcqName=request.data.get('mcqName'))
+                return Response({"message": "MCQ already created"})
+            except McqListDatatModel.DoesNotExist:
+                serializer = McqListDataSerializer(data=request.data)
+                if serializer.is_valid(raise_exception=True):
+                    serializer.save()
+                    return Response({"data": serializer.data, "Message": "mcq added successfully"})
+                return Response({"Error": "invalid"})
+    except CustomUser.DoesNotExist:
+        return Response({"Message":"invalid"})
+
+@api_view(['GET'])
+def get_languages(request,mcqId):
+    try:
+        token=Token.objects.get(key=request.auth.key)
+        user=token.user
+        serializer = CustomUserSerializer(user)
         try:
-            existing_mcqName = McqListDatatModel.objects.get(mcqName=request.data.get('mcqName'))
-            return Response({"message": "MCQ already created"})
-        except McqListDatatModel.DoesNotExist:
-            serializer = McqListDataSerializer(data=request.data)
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-                return Response({"data": serializer.data, "Message": "mcq added successfully"})
-            return Response({"Error": "invalid"})
-        
+            if(request.method=="GET"):
+                languages = LanguageModel.objects.filter(mcqId=mcqId)
+                serializer = LanguageModelSerializer(languages, many=True)
+                return Response({"languages":serializer.data}) 
+        except:
+            return Response({"Message": "error"})
+    except CustomUser.DoesNotExist:
+        return Response({"Message":"invalid"})
 
 
-@api_view(['GET','POST'])
-def get_languages(request):
-    if(request.method=="GET"):
-        languages = LanguageModel.objects.all()
-        serializer = LanguageModelSerializer(languages, many=True)
-        return Response({"languages":serializer.data}) 
-    elif(request.method=="POST"):
+
+@api_view(['POST'])
+def add_languages(request):
+    try:
+        token=Token.objects.get(key=request.auth.key)
+        user=token.user
+        serializer = CustomUserSerializer(user)
+        if(request.method=="POST"):
+            try:
+                existing_language = LanguageModel.objects.get(languageName=request.data.get('languageName'))
+                return Response({"message": "Language already created"})
+            except LanguageModel.DoesNotExist:
+                serializer = LanguageModelSerializer(data=request.data)
+                if serializer.is_valid(raise_exception=True):
+                    serializer.save()
+                    return Response({"data": serializer.data, "Message": "Language added successfully"})
+                return Response({"Message": "error"})
+    except :
+        return Response({"Message":"invalid"})
+
+@api_view(['GET'])
+def get_topic(request,languageId):
+    try:
+        token=Token.objects.get(key=request.auth.key)
+        user=token.user
+        serializer = CustomUserSerializer(user)
         try:
-            existing_language = LanguageModel.objects.get(languageName=request.data.get('languageName'))
-            return Response({"message": "Language already created"})
-        except LanguageModel.DoesNotExist:
-            serializer = LanguageModelSerializer(data=request.data)
-            if serializer.is_valid(raise_exception=True):
+            if(request.method=="GET"):
+                topic = TopicModel.objects.filter(languageId=languageId)
+                serializer = TopicSerializer(topic, many=True)
+                return Response({"topic":serializer.data}) 
+        except:
+            return Response({"Message": "error"})
+    except :
+        return Response({"Message":"invalid"})
+
+
+@api_view(['POST'])
+def add_topic(request):
+    try:
+        token=Token.objects.get(key=request.auth.key)
+        user=token.user
+        serializer = CustomUserSerializer(user)
+        if(request.method=="POST"):
+            try:
+                existing_topicName = TopicModel.objects.get(topicName=request.data.get('topicName'))
+                return Response({"message": "Language already created"})
+            except TopicModel.DoesNotExist:
+                serializer = TopicSerializer(data=request.data)
+                if serializer.is_valid(raise_exception=True):
+                    serializer.save()
+                    return Response({"data": serializer.data, "Message": "Language added successfully"})
+                return Response({"Message": "error"})
+    except :
+        return Response({"Message":"invalid"})
+
+
+
+@api_view(['POST'])
+def add_questions(request):
+    try:
+        token = Token.objects.get(key=request.auth.key)
+        user = token.user
+        if request.method == "POST":
+            serializer = QuestionSerializer(data=request.data)
+            if serializer.is_valid():
                 serializer.save()
-                return Response({"data": serializer.data, "Message": "Language added successfully"})
-            return Response({"Error": "invalid"})
-        
-            
-        
+                return Response({"data": serializer.data, "Message": "Question added successfully"}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"Message": "Validation error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    except Token.DoesNotExist:
+        return Response({"Message": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
+    except Exception as e:
+        return Response({"Message": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+def get_questions(request,languageId,topicId):
+    try:
+        token=Token.objects.get(key=request.auth.key)
+        user=token.user
+        serializer = CustomUserSerializer(user)
+        try:
+            if(request.method=="GET"):
+                questions = QuestionModel.objects.filter(languageId=languageId,topicId=topicId)
+                serializer = QuestionSerializer(questions, many=True)
+                return Response({"topic":serializer.data}) 
+        except:
+            return Response({"Message": "error"})
+    except :
+        return Response({"Message":"invalid"})
+
