@@ -261,11 +261,38 @@ def add_questions(request):
         user = token.user
         if request.method == "POST":
             serializer = QuestionSerializer(data=request.data)
+            
             if serializer.is_valid():
-                serializer.save()
-                return Response({"data": serializer.data, "Message": "Question added successfully"}, status=status.HTTP_201_CREATED)
+               print("Validated Data:", serializer.validated_data)
+               serializer.save()
+               return Response({"data": serializer.data, "Message": "Question added successfully"}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"Message": "Validation error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    except Token.DoesNotExist:
+        return Response({"Message": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
+    except Exception as e:
+        return Response({"Message": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+@api_view(['POST'])
+def add_many_questions(request):
+    try:
+        token = Token.objects.get(key=request.auth.key)
+        user = token.user
+        if request.method == "POST":
+            questions_data = request.data.get('questions', [])
+
+            # Validate and save each question in the list
+            responses = []
+            for question_data in questions_data:
+                serializer = QuestionSerializer(data=question_data)
+                if serializer.is_valid():
+                    serializer.save()
+                    responses.append({"data": serializer.data, "Message": "Question added successfully"})
+                else:
+                    responses.append({"Message": "Validation error", "errors": serializer.errors})
+
+            return Response(responses, status=status.HTTP_201_CREATED)
     except Token.DoesNotExist:
         return Response({"Message": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
     except Exception as e:
@@ -282,9 +309,8 @@ def get_questions(request,languageId,topicId):
             if(request.method=="GET"):
                 questions = QuestionModel.objects.filter(languageId=languageId,topicId=topicId)
                 serializer = QuestionSerializer(questions, many=True)
-                return Response({"topic":serializer.data}) 
+                return Response({"questions":serializer.data}) 
         except:
             return Response({"Message": "error"})
     except :
         return Response({"Message":"invalid"})
-

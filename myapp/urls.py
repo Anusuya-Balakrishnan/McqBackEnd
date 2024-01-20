@@ -18,6 +18,7 @@ urlpatterns = [
     path('add_topic/',views.add_topic,name='add_topic'),
     path('get_topic/<int:languageId>/',views.get_topic,name='get_topic'),
     path('add_questions/',views.add_questions,name="add_questions"),
+    path('add_many_questions/',views.add_many_questions,name="add_many_questions"),
     path('get_questions/<int:languageId>/<int:topicId>/',views.get_questions,name='get_questions'),
     path('users/<str:name>/', views.custom_user_detail, name='custom_user_detail'),
 ]
@@ -42,5 +43,5 @@ urlpatterns = [
 # "questions":{"question":"Who invented Java Programming?","option":["Guido van Rossum","James Gosling","Dennis Ritchie","Bjarne Stroustrup"],"answer":"James Gosling"},
 # "level":"beginner",
 # "mark":1,
-# "time":1.1
+# "time":1
 # }

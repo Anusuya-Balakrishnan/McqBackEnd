@@ -97,4 +97,4 @@ class QuestionModel(models.Model):
     questions=models.JSONField()
     level=models.TextField()
     mark=models.IntegerField()
-    time=models.FloatField()
+    time=models.IntegerField()
