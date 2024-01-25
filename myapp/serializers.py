@@ -64,3 +64,8 @@ class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model=QuestionModel
         fields = '__all__'
+
+class ResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=ResultModel
+        fields="__all__"

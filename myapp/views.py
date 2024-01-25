@@ -10,6 +10,8 @@ from .models import *
 from .serializers import *
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
+import ast
+from collections import OrderedDict
 # from .emailAuthenticate import EmailBackend
 
 @api_view(["GET","POST","PATCH"])
@@ -298,19 +300,61 @@ def add_many_questions(request):
     except Exception as e:
         return Response({"Message": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
 @api_view(["GET"])
-def get_questions(request,languageId,topicId):
+def get_questions(request, languageId, topicId):
     try:
-        token=Token.objects.get(key=request.auth.key)
-        user=token.user
+        token = Token.objects.get(key=request.auth.key)
+        user = token.user
         serializer = CustomUserSerializer(user)
+
         try:
-            if(request.method=="GET"):
-                questions = QuestionModel.objects.filter(languageId=languageId,topicId=topicId)
+            if request.method == "GET":
+                questions = QuestionModel.objects.filter(languageId=languageId, topicId=topicId)
                 serializer = QuestionSerializer(questions, many=True)
-                return Response({"questions":serializer.data}) 
+                questions_values = []
+                regular_dict=[]
+                id_list=[]
+                for item in serializer.data:
+                    # get all questions OrderedDict from main data and stored into list
+                    regular_dict.append(json.loads(json.dumps(item["questions"])))
+                    # get id of each questions
+                    id_list.append(item["id"])
+                try:
+                    for each in regular_dict:
+                        ordered_dict = eval(each, {'OrderedDict': OrderedDict})
+                        # converting OrderedDict into python dictionary 
+                        myDict={}
+                        for key, value in ordered_dict.items():
+                            myDict[key]=value
+                        questions_values.append(myDict)
+                except Exception as e:
+                    print("error",e)
+                result={}
+                for id,question in zip(id_list,questions_values):
+                    result[id]=question
+                resultData={"questions": serializer.data,"questions_values":result}
+                return Response({"data":resultData})
         except:
             return Response({"Message": "error"})
-    except :
-        return Response({"Message":"invalid"})
+    except:
+        return Response({"Message": "invalid"})
+
+
+# @api_view(["GET"])
+# def get_questions(request,languageId,topicId):
+#     try:
+#         token=Token.objects.get(key=request.auth.key)
+#         user=token.user
+#         serializer = CustomUserSerializer(user)
+#         try:
+#             if(request.method=="GET"):
+#                 questions = QuestionModel.objects.filter(languageId=languageId,topicId=topicId)
+#                 serializer = QuestionSerializer(questions, many=True)
+#                 # Assuming get_questions_as_dict is a method in your QuestionModel
+#                 questions_as_dict_list = [question.get_questions_as_dict() for question in questions]
+#                 print("questions_as_dict_list",questions_as_dict_list)
+#                 return Response({"questions":serializer.data,"questions_as_dict_list":questions_as_dict_list}) 
+#         except:
+#             return Response({"Message": "error"})
+#     except :
+#         return Response({"Message":"invalid"})

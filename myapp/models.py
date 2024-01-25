@@ -1,5 +1,7 @@
 # from django.db import models
+
 from djongo import models
+import json
 
 from django.contrib.auth.models import AbstractBaseUser,AbstractUser, BaseUserManager, PermissionsMixin
 
@@ -98,3 +100,13 @@ class QuestionModel(models.Model):
     level=models.TextField()
     mark=models.IntegerField()
     time=models.IntegerField()
+    def get_questions_as_dict(self):
+        return json.loads(self.questions)
+
+class ResultModel(models.Model):
+    userID=models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    languageId=models.ForeignKey(LanguageModel, on_delete=models.CASCADE)
+    topicId=models.ForeignKey(TopicModel,on_delete=models.CASCADE)
+    answeredQuestions=models.JSONField()
+    result=models.IntegerField()
+    level=models.TextField()
