@@ -1,6 +1,7 @@
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.http import JsonResponse
 # from rest_framework.permissions import AllowAny
 # from knox.models import AuthToken
 from rest_framework import status
@@ -224,6 +225,7 @@ def get_topic(request,languageId):
         token=Token.objects.get(key=request.auth.key)
         user=token.user
         serializer = CustomUserSerializer(user)
+        
         try:
             if(request.method=="GET"):
                 topic = TopicModel.objects.filter(languageId=languageId)
@@ -339,22 +341,162 @@ def get_questions(request, languageId, topicId):
     except:
         return Response({"Message": "invalid"})
 
+def get_results_by_user( user_id):
+    # Retrieve the user based on user_id
+    user = get_object_or_404(CustomUser, id=user_id)
 
-# @api_view(["GET"])
-# def get_questions(request,languageId,topicId):
-#     try:
-#         token=Token.objects.get(key=request.auth.key)
-#         user=token.user
-#         serializer = CustomUserSerializer(user)
-#         try:
-#             if(request.method=="GET"):
-#                 questions = QuestionModel.objects.filter(languageId=languageId,topicId=topicId)
-#                 serializer = QuestionSerializer(questions, many=True)
-#                 # Assuming get_questions_as_dict is a method in your QuestionModel
-#                 questions_as_dict_list = [question.get_questions_as_dict() for question in questions]
-#                 print("questions_as_dict_list",questions_as_dict_list)
-#                 return Response({"questions":serializer.data,"questions_as_dict_list":questions_as_dict_list}) 
-#         except:
-#             return Response({"Message": "error"})
-#     except :
-#         return Response({"Message":"invalid"})
+    # Filter ResultModel instances based on the user
+    results = ResultModel.objects.filter(userID=user)
+    
+    if(len(list(results))==0):
+        return False
+    else:
+        # Extract 'answeredQuestions' values from results
+        answered_questions_list = [result.answeredQuestions for result in results]
+    return answered_questions_list
+
+
+def addResultDatatoDatabase(result_data):
+    serializer = ResultSerializer(data=result_data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        print("Serializer is invalid. Errors:", serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["POST"])
+def add_resultData(request):
+    try:
+        token = Token.objects.get(key=request.auth.key)
+        user = token.user
+        serializer = CustomUserSerializer(user)
+        userData=serializer.data
+        userId=int(userData["id"])
+        clientData=request.data["resultData"]
+        
+        try:
+            if request.method == "POST":
+                resultQuestionList=clientData.get('resultList')
+                topicId=clientData.get('topicId')
+                languageId=clientData.get('languageId')
+                level=clientData.get('level')
+                result=0
+                # Create ResultModel object
+                current_question_id=[]
+                for i in resultQuestionList:
+                    current_question_id.append(int(i))                    
+                    if(resultQuestionList[i]['isCorrect']):
+                        result+=1
+                return_value=get_results_by_user(userId)
+                result_data = {
+                    'userID': CustomUser.objects.get(id=userId).id,
+                    'answeredQuestions': resultQuestionList,
+                    'topicId': TopicModel.objects.get(id=int(topicId)).id,
+                    'languageId': LanguageModel.objects.get(id=int(languageId)).id,
+                    'level': level,
+                    'result':result
+                    }
+                if( not return_value):  
+                    addResultDatatoDatabase(result_data)
+                else:
+                    answer_value=[]
+                    existing_question_id_list=[]
+                    for item in return_value:
+                    # get all questions OrderedDict from main data and stored into list
+                        answer_value.append(json.loads(json.dumps(item)))
+                    for eachAnswer in answer_value:
+                        for key in eachAnswer:
+                            existing_question_id_list.append(int(key))
+                    
+                    # Convert lists to sets
+                    current_question_id_set = set(current_question_id)
+                    existing_question_id_set = set(existing_question_id_list)
+
+                    # Find common elements
+                    common_ids = current_question_id_set.intersection(existing_question_id_set)
+
+                    # Check if there are common elements
+                    if common_ids:
+                        print("person already completed this quiz:", common_ids)
+                        return Response({"message": "Person already completed this quiz."})
+                    else:
+                        print("new user")
+                        addResultDatatoDatabase(result_data)
+                        return Response({"message": "Result added successfully."})
+        except Exception as e:
+            print("Error occured",e)
+            return Response({"Message": "error"})
+    except:
+        return Response({"Message": "invalid"})
+
+def getresult(userID):
+    # Retrieve the user based on user_id
+    user = get_object_or_404(CustomUser, id=userID)
+
+    # Filter ResultModel instances based on the user
+    results = ResultModel.objects.filter(userID=user)
+    question_id=[]
+    if(len(list(results))==0):
+        print("result",results)
+        return False
+    else:
+        # Extract 'answeredQuestions' values from results
+        answered_questions_list = [result.answeredQuestions for result in results]
+        
+        for eachData in answered_questions_list:
+            question_id.append(json.loads(json.dumps(eachData)))    
+    return question_id
+
+@api_view(["POST"])
+def get_resultData(request):
+    try:
+        token = Token.objects.get(key=request.auth.key)
+        user = token.user
+        serializer = CustomUserSerializer(user)
+        userData=serializer.data
+        userId=int(userData["id"])
+        correctAnswerCount=0
+        wrongAnswerCount=0
+        topicName=""
+        try:
+            if request.method == "POST":
+                questions_list=request.data.get("resultData")
+                answer_list=getresult(userId)
+                for eachData in answer_list:
+                    for eachKey in questions_list:
+                        question = QuestionModel.objects.get(id=eachKey)
+                        topicName = question.topicId.topicName
+                        if(eachData[eachKey]["isCorrect"]):
+                            correctAnswerCount+=1
+                        else:
+                            wrongAnswerCount+=1
+            result_data={"topicName":topicName,"correctAnswerCount":correctAnswerCount,"wrongAnswerCount":wrongAnswerCount}
+            return Response({"result":result_data})
+        except Exception as e:
+            return Response({"result":"error"})
+    except:
+        return Response({"Message": "invalid"})
+
+
+@api_view(["POST"])
+def leaderBoardApi(request):
+    try:
+        token = Token.objects.get(key=request.auth.key)
+        user = token.user
+        serializer = CustomUserSerializer(user)
+        userData=serializer.data
+        if(request.method=="POST"):
+            try:
+                # Retrieve all ResultModel objects
+                all_results = ResultModel.objects.all()
+
+                # Serialize the queryset if needed
+                serializer = ResultSerializer(all_results, many=True)
+                result_data = serializer.data
+                return Response({"data":serializer.data})
+            except Exception as e:
+                return Response({"error":f"error message{e}"})
+        return Response({"message":"invalid Request"})
+    except:
+        return Response({"Message":"invalid"})

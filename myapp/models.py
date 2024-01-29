@@ -110,3 +110,5 @@ class ResultModel(models.Model):
     answeredQuestions=models.JSONField()
     result=models.IntegerField()
     level=models.TextField()
+    # currentDate=models.DateField()
+    # noOfTimeAttended=models.IntegerField()

@@ -20,6 +20,9 @@ urlpatterns = [
     path('add_questions/',views.add_questions,name="add_questions"),
     path('add_many_questions/',views.add_many_questions,name="add_many_questions"),
     path('get_questions/<int:languageId>/<int:topicId>/',views.get_questions,name='get_questions'),
+    path("add_resultData/",views.add_resultData,name="add_resultData"),
+    path("get_resultData/",views.get_resultData,name="get_resultData"),
+    path("leaderBoardApi/",views.leaderBoardApi,name="leaderBoardApi"),
     path('users/<str:name>/', views.custom_user_detail, name='custom_user_detail'),
 ]
 

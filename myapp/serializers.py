@@ -68,4 +68,4 @@ class QuestionSerializer(serializers.ModelSerializer):
 class ResultSerializer(serializers.ModelSerializer):
     class Meta:
         model=ResultModel
-        fields="__all__"
+        fields = ['userID', 'languageId', 'topicId', 'answeredQuestions', 'result', 'level']
