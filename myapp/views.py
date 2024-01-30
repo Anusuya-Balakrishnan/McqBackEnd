@@ -486,6 +486,7 @@ def leaderBoardApi(request):
         user = token.user
         serializer = CustomUserSerializer(user)
         userData=serializer.data
+        currentUserName=userData.get("studentName")
         if(request.method=="POST"):
             try:
                 # Retrieve all ResultModel objects
@@ -493,8 +494,58 @@ def leaderBoardApi(request):
 
                 # Serialize the queryset if needed
                 serializer = ResultSerializer(all_results, many=True)
-                result_data = serializer.data
-                return Response({"data":serializer.data})
+                result_data = json.loads(json.dumps(serializer.data))
+                resultList=[]
+                for eachResult in result_data:
+                    resultDict={}
+                    currentUser=False
+                    for eachKey in eachResult:
+                        if eachKey=="userID":
+                            # Retrieve CustomUser object by ID
+                            custom_user = CustomUser.objects.get(id=eachResult["userID"])
+                            # Serialize the CustomUser object to get the studentName
+                            custom_serializer = CustomUserSerializer(custom_user)
+                            user_data = custom_serializer.data
+                            user_name = user_data.get("studentName")
+                            if(user_name==currentUserName):
+                                currentUser=True
+                            resultDict["username"]=user_name
+                            
+                        elif eachKey=="result":
+                            resultDict["result"]=eachResult[eachKey]
+                        resultDict["currentUser"]=currentUser
+                    resultList.append(resultDict)
+                
+                
+            #     resultList=[{'username': 'anusuya', 'currentUser': True, 'result': 4},
+            #  {'username': 'siva', 'currentUser': False, 'result': 3},
+            #  {'username': 'anusuya', 'currentUser': False, 'result': 2},
+            #  {'username': 'john', 'currentUser': True, 'result': 5},
+            #  {'username': 'siva', 'currentUser': False, 'result': 1}]
+            #     print("resultList",resultList)
+
+                usernameList=[]
+                data={}
+                userResultData=[]
+                for eachData in resultList:
+                    if eachData["username"] in usernameList:
+                        for userResult in userResultData:
+                            if userResult["username"]==eachData["username"]:
+                                userResult["result"]= (userResult["result"]+eachData["result"])//2
+                                userResult["noOfTestAttended"]+=1
+                    else:
+                        data={
+                            "username": eachData["username"],
+                            "result": eachData["result"],
+                            "currentUser":eachData["currentUser"],
+                            "noOfTestAttended":1
+                            }
+                        usernameList.append(eachData["username"])
+                        userResultData.append(data)
+                # Sort userResultData based on the "result" value in descending order
+                userResultData = sorted(userResultData, key=lambda x: x["result"], reverse=True)
+                print("userResultData",userResultData)
+                return Response({"data":userResultData})
             except Exception as e:
                 return Response({"error":f"error message{e}"})
         return Response({"message":"invalid Request"})
