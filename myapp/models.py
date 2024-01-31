@@ -36,45 +36,56 @@ class Student(models.Model):
     def __str__(self):
         return self.name
     
+# class CustomUserManager(BaseUserManager):
+#     def create_user(self, oceanRegisterNo,email, password=None,**extra_fields):
+#         if not email:
+#             raise ValueError('The Email field must be set')
+#         email = self.normalize_email(email)
+#         user = self.model(oceanRegisterNo=oceanRegisterNo, email=email, **extra_fields)
+#         user.set_password(password)
+#         user.save(using=self._db)
+#         return user
+
+#     def create_superuser(self,oceanRegisterNo, email, password=None, **extra_fields):
+#         extra_fields.setdefault('is_staff', True)
+#         extra_fields.setdefault('is_superuser', True)
+#         return self.create_user(oceanRegisterNo,email, password, **extra_fields)
+
+
 class CustomUserManager(BaseUserManager):
-    def create_user(self, email, password=None,**extra_fields):
+    def create_user(self, oceanRegisterNo, email, password=None, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+        user = self.model(oceanRegisterNo=oceanRegisterNo, email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password=None, **extra_fields):
+    def create_superuser(self, oceanRegisterNo, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        return self.create_user(email, password, **extra_fields)
+
+        # Call the base class create_superuser method
+        return super().create_superuser(oceanRegisterNo, email, password, **extra_fields)
+
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     studentName = models.TextField()
-    date = models.DateTimeField()
-    dob = models.DateTimeField()
+    oceanRegisterNo=models.TextField(unique=True)
     mobileNumber = models.TextField()
-    address = models.TextField()
-    qualification = models.TextField()
-    nationality = models.TextField()
-    workingDesignation = models.TextField()
-    studentCollegeName = models.TextField()
-    email = models.EmailField(unique=True)
-    whatsappNumber = models.TextField()
-    gender = models.TextField()
-
+    email = models.EmailField()
+    password=models.TextField()
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
     objects = CustomUserManager()
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'oceanRegisterNo'
     REQUIRED_FIELDS = []
 
     def __str__(self):
-        return self.email
+        return self.oceanRegisterNo
 
 class McqListDatatModel(models.Model):
     mcqName=models.TextField()

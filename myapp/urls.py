@@ -9,6 +9,7 @@ urlpatterns = [
     path("user/",views.person,name="person"),
     path("student/",views.student,name="student"),
     path('users/', views.custom_user_list, name='custom_user_list'),
+    path("custom_user_check/",views.custom_user_check,name="custom_user_check"),
     path("userLogin/",views.custom_user_login,name='custom_login'),
     path("userLogout/",views.custom_user_logout,name="custom_logout"),
     path("test_token/",views.test_token,name="test_token"),
@@ -47,4 +48,46 @@ urlpatterns = [
 # "level":"beginner",
 # "mark":1,
 # "time":1
+# }
+
+# {
+#   "questions": [
+#     {
+#       "languageId": 1,
+#       "topicId": 1,
+#       "questions": {
+#         "question": "Which of these is long data type literal?",
+#         "option": ["0x99fffL", "ABCDEFG", "0x99fffa", "99671246"],
+#         "answer": "0x99fffL"
+#       },
+#       "level": "beginner",
+#       "mark": 1,
+#       "time": 1
+#     },
+#     {
+#       "languageId": 1,
+#       "topicId": 1,
+#       "questions": {
+#         "question": "Which of these can be returned by the operator &?",
+#         "option": ["Integer", "Boolean", "Character", "Integer or Boolean"],
+#         "answer": "Integer or Boolean"
+#       },
+#       "level": "beginner",
+#       "mark": 1,
+#       "time": 1
+#     },
+#      {
+#       "languageId": 1,
+#       "topicId": 1,
+#       "questions": {
+#         "question": "Literals in java must be appended by which of these?",
+#         "option": ["L", "I", "D", "L and I"],
+#         "answer": "L and I"
+#       },
+#       "level": "beginner",
+#       "mark": 1,
+#       "time": 1
+#     }
+    
+#   ]
 # }

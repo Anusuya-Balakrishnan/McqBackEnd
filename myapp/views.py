@@ -14,6 +14,7 @@ from rest_framework.authentication import TokenAuthentication
 import ast
 from collections import OrderedDict
 # from .emailAuthenticate import EmailBackend
+from django.contrib.auth import authenticate
 
 @api_view(["GET","POST","PATCH"])
 def person(request):
@@ -72,6 +73,16 @@ def student(request):
 
 
 
+@api_view(['POST'])
+def custom_user_check(request):
+    if request.method=="POST":
+        try:
+            user = CustomUser.objects.get(oceanRegisterNo=request.data['oceanRegisterNo'])    
+            return Response({"message":True})
+        except CustomUser.DoesNotExist:
+            return Response({"message":False})
+    return Response({"message":"invalid"})
+
 # this api is used to get all user details and register new user 
 @api_view(['GET', 'POST'])
 def custom_user_list(request):
@@ -82,34 +93,69 @@ def custom_user_list(request):
 
     elif request.method == 'POST':
         try:
-            user = CustomUser.objects.get(email=request.data['email'])
+            user = CustomUser.objects.get(oceanRegisterNo=request.data['oceanRegisterNo'])
             return Response({"message":"person already present"})
-        except:
+        except CustomUser.DoesNotExist:
             serializer = CustomUserSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save()
-                user =CustomUser.objects.get(email=request.data["email"])
+                # Extract password from the request data
+                password = request.data.get('password')
+
+                # Create and save the user
+                user = serializer.save()
+
+                # Set the password for the user
+                user.set_password(password)
+                user.save()
+                
                 # token="HEllo"
                 token, created = Token.objects.get_or_create(user=user)
                 return Response({"message":"successfully added into database","token":token.key,"user":serializer.data}, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# this api is used for login page of custom user
+
+
+
 @api_view(['POST'])
 def custom_user_login(request):
-    data=request.data
-    if request.method=="POST":
+    data = request.data
+
+    if request.method == "POST":
         try:
-            # user=get_object_or_404(CustomUser,email=data['email'])
-            user=CustomUser.objects.get(email=data['email'])
-            print("user$$$$$$$$$$$$$$$$$$$$$$$",user)
-            serializer = CustomUserSerializer(user)
+            ocean_register_no = data['oceanRegisterNo']
+            password = data['password']
+
+            # Authenticate the user
+            user = authenticate(oceanRegisterNo=ocean_register_no, password=password)
+
+            if user is not None:
+                # Authentication successful
+                token, created = Token.objects.get_or_create(user=user)
+                serializer = CustomUserSerializer(user)
+                return Response({"message": True, "token": token.key, "studentName": serializer.data["studentName"]})
+            else:
+                # Authentication failed
+                return Response({"message": False}, status=status.HTTP_401_UNAUTHORIZED)
+
+        except CustomUser.DoesNotExist:
+            return Response({"message": "Person not found"}, status=status.HTTP_404_NOT_FOUND)
+
+# # this api is used for login page of custom user
+# @api_view(['POST'])
+# def custom_user_login(request):
+#     data=request.data
+#     if request.method=="POST":
+#         try:
+#             # user=get_object_or_404(CustomUser,email=data['email'])
+#             user=CustomUser.objects.get(oceanRegisterNo=data['oceanRegisterNo'])
+#             print("user$$$$$$$$$$$$$$$$$$$$$$$",user)
+#             serializer = CustomUserSerializer(user)
            
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({"message":"login successfully","token":token.key,"user":serializer.data})
-        except:
-            return Response({"message":"person not exists"},status=status.HTTP_404_NOT_FOUND)
+#             token, created = Token.objects.get_or_create(user=user)
+#             return Response({"message":"login successfully","token":token.key,"user":serializer.data})
+#         except:
+#             return Response({"message":"person not exists"},status=status.HTTP_404_NOT_FOUND)
     
 
 
@@ -479,7 +525,7 @@ def get_resultData(request):
         return Response({"Message": "invalid"})
 
 
-@api_view(["POST"])
+@api_view(["GET"])
 def leaderBoardApi(request):
     try:
         token = Token.objects.get(key=request.auth.key)
@@ -487,7 +533,8 @@ def leaderBoardApi(request):
         serializer = CustomUserSerializer(user)
         userData=serializer.data
         currentUserName=userData.get("studentName")
-        if(request.method=="POST"):
+        print("currentUserName",currentUserName)
+        if(request.method=="GET"):
             try:
                 # Retrieve all ResultModel objects
                 all_results = ResultModel.objects.all()
@@ -545,7 +592,7 @@ def leaderBoardApi(request):
                 # Sort userResultData based on the "result" value in descending order
                 userResultData = sorted(userResultData, key=lambda x: x["result"], reverse=True)
                 print("userResultData",userResultData)
-                return Response({"data":userResultData})
+                return Response({"message":userResultData})
             except Exception as e:
                 return Response({"error":f"error message{e}"})
         return Response({"message":"invalid Request"})

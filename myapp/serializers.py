@@ -31,14 +31,14 @@ class StudentSerializer(serializers.Serializer):
     gender=serializers.CharField()
     def create(self, data):
         return Student.objects.create(**data)
-    
+
+
+
 class CustomUserSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
     class Meta:
         model = CustomUser
-        fields = ('id', 'studentName', 'date', 'dob', 'mobileNumber', 'address', 'qualification',
-                  'nationality', 'workingDesignation', 'studentCollegeName', 'email',
-                  'whatsappNumber', 'gender', 'is_active', 'is_staff')
+        fields = ('id', 'studentName', 'oceanRegisterNo','mobileNumber','email','password')
         read_only_fields = ('id', 'is_active', 'is_staff')
     def get_id(self, obj):
         # Convert the Djongo ObjectId to a string
