@@ -50,44 +50,86 @@ urlpatterns = [
 # "time":1
 # }
 
-# {
-#   "questions": [
-#     {
-#       "languageId": 1,
-#       "topicId": 1,
-#       "questions": {
-#         "question": "Which of these is long data type literal?",
-#         "option": ["0x99fffL", "ABCDEFG", "0x99fffa", "99671246"],
-#         "answer": "0x99fffL"
-#       },
-#       "level": "beginner",
-#       "mark": 1,
-#       "time": 1
-#     },
-#     {
-#       "languageId": 1,
-#       "topicId": 1,
-#       "questions": {
-#         "question": "Which of these can be returned by the operator &?",
-#         "option": ["Integer", "Boolean", "Character", "Integer or Boolean"],
-#         "answer": "Integer or Boolean"
-#       },
-#       "level": "beginner",
-#       "mark": 1,
-#       "time": 1
-#     },
-#      {
-#       "languageId": 1,
-#       "topicId": 1,
-#       "questions": {
-#         "question": "Literals in java must be appended by which of these?",
-#         "option": ["L", "I", "D", "L and I"],
-#         "answer": "L and I"
-#       },
-#       "level": "beginner",
-#       "mark": 1,
-#       "time": 1
-#     }
+
+# http://127.0.0.1:8000/mcq/get_mcqList/
+
+{
+    "mcqName":"programming"
+}
+# http://127.0.0.1:8000/mcq/add_languages/
+{
+    "mcqId":1,
+    "languageName":"Java"
+}
+
+# add_topic
+{
+    "languageId":1,
+    "topicName":"Variables"
+}
+# add_many_questions
+{
+  "questions": [
+    {
+      "languageId": 1,
+      "topicId": 1,
+      "questions": {
+        "question": "What is a variable in Java?",
+        "option": ["A reserved keyword", "A storage location with a specific type and identifier", "A method in a class", "A loop construct"],
+        "answer": "A storage location with a specific type and identifier"
+      },
+      "level": "beginner",
+      "mark": 1,
+      "time": 1
+    },
+    {
+      "languageId": 1,
+      "topicId": 1,
+      "questions": {
+        "question": "Which of the following is a valid variable name in Java?",
+        "option": ["123variable", "variable@name", "_variableName", "class"],
+        "answer": "_variableName"
+      },
+      "level": "beginner",
+      "mark": 1,
+      "time": 1
+    },
+     {
+      "languageId": 1,
+      "topicId": 1,
+      "questions": {
+        "question": "What is the default value of an int variable in Java?",
+        "option": ["0", "0.0", "null", "false"],
+        "answer": "0"
+      },
+      "level": "beginner",
+      "mark": 1,
+      "time": 1
+    }
+     ,{
+      "languageId": 1,
+      "topicId": 1,
+      "questions": {
+        "question": "How do you declare a constant in Java?",
+        "option": ["Using the 'final' keyword", "Using the 'const' keyword", "Using the 'static' keyword", "Constants are not allowed in Java"],
+        "answer": "Using the 'final' keyword"
+      },
+      "level": "beginner",
+      "mark": 1,
+      "time": 1
+    },
+    {
+      "languageId": 1,
+      "topicId": 1,
+      "questions": {
+        "question": "Which data type is used to store decimal numbers in Java?",
+        "option": ["int", "double", "char","boolean"],
+        "answer": "double"
+      },
+      "level": "beginner",
+      "mark": 1,
+      "time": 1
+    }
     
-#   ]
-# }
+  ]
+}

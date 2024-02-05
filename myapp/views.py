@@ -399,18 +399,29 @@ def get_results_by_user( user_id):
     else:
         # Extract 'answeredQuestions' values from results
         answered_questions_list = [result.answeredQuestions for result in results]
-    return answered_questions_list
+        return answered_questions_list
 
 
 def addResultDatatoDatabase(result_data):
     serializer = ResultSerializer(data=result_data)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
         print("Serializer is invalid. Errors:", serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+def get_resultValue(resultData):
+    totalQuestions=len(resultData)
+    correctCount=0
+    for eachData in resultData:
+        if(resultData[eachData]["isCorrect"]):
+            print("resultData[eachData][isCorrect]",resultData[eachData]["isCorrect"])
+            correctCount+=1
+    
+    return {"correctCount":correctCount,"wrongCount":totalQuestions-correctCount}
+
+        
 @api_view(["POST"])
 def add_resultData(request):
     try:
@@ -435,6 +446,7 @@ def add_resultData(request):
                     if(resultQuestionList[i]['isCorrect']):
                         result+=1
                 return_value=get_results_by_user(userId)
+                
                 result_data = {
                     'userID': CustomUser.objects.get(id=userId).id,
                     'answeredQuestions': resultQuestionList,
@@ -445,12 +457,18 @@ def add_resultData(request):
                     }
                 if( not return_value):  
                     addResultDatatoDatabase(result_data)
+                    resultDict=get_resultValue(resultData=resultQuestionList)
+                    resultDict["topicName"]=TopicModel.objects.get(id=int(topicId)).topicName
+                        # true for new student
+                    return Response({"message": True,"data":resultDict})
                 else:
                     answer_value=[]
                     existing_question_id_list=[]
+                    # convertin OrderedDict to list([{'1': {'selectedAnswer': '0x99fffL', 'isCorrect': True}, '2': {'selectedAnswer': 'Integer or Boolean', 'isCorrect': True}}])
                     for item in return_value:
-                    # get all questions OrderedDict from main data and stored into list
                         answer_value.append(json.loads(json.dumps(item)))
+                        print("answer_value",answer_value)
+                    # existing_question_id_list ([1,2,3])
                     for eachAnswer in answer_value:
                         for key in eachAnswer:
                             existing_question_id_list.append(int(key))
@@ -465,16 +483,23 @@ def add_resultData(request):
                     # Check if there are common elements
                     if common_ids:
                         print("person already completed this quiz:", common_ids)
-                        return Response({"message": "Person already completed this quiz."})
+                        resultDict=get_resultValue(resultData=resultQuestionList)
+                        resultDict["topicName"]=TopicModel.objects.get(id=int(topicId)).topicName
+
+                            # false for person already completed this quiz
+                        return Response({"message": False,"data":resultDict})
                     else:
                         print("new user")
                         addResultDatatoDatabase(result_data)
-                        return Response({"message": "Result added successfully."})
+                        resultDict=get_resultValue(resultData=resultQuestionList)
+                        resultDict["topicName"]=TopicModel.objects.get(id=int(topicId)).topicName
+                        # true for new student
+                        return Response({"message": True,"data":resultDict})
         except Exception as e:
-            print("Error occured",e)
             return Response({"Message": "error"})
     except:
         return Response({"Message": "invalid"})
+
 
 def getresult(userID):
     # Retrieve the user based on user_id
