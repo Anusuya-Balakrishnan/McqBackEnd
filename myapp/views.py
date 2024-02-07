@@ -439,14 +439,15 @@ def add_resultData(request):
                 languageId=clientData.get('languageId')
                 level=clientData.get('level')
                 result=0
+                print("resultQuestionList",resultQuestionList)
                 # Create ResultModel object
                 current_question_id=[]
                 for i in resultQuestionList:
                     current_question_id.append(int(i))                    
                     if(resultQuestionList[i]['isCorrect']):
                         result+=1
-                return_value=get_results_by_user(userId)
                 
+                return_value=get_results_by_user(userId)
                 result_data = {
                     'userID': CustomUser.objects.get(id=userId).id,
                     'answeredQuestions': resultQuestionList,
@@ -485,7 +486,6 @@ def add_resultData(request):
                         print("person already completed this quiz:", common_ids)
                         resultDict=get_resultValue(resultData=resultQuestionList)
                         resultDict["topicName"]=TopicModel.objects.get(id=int(topicId)).topicName
-
                             # false for person already completed this quiz
                         return Response({"message": False,"data":resultDict})
                     else:
