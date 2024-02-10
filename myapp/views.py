@@ -94,7 +94,7 @@ def custom_user_list(request):
     elif request.method == 'POST':
         try:
             user = CustomUser.objects.get(oceanRegisterNo=request.data['oceanRegisterNo'])
-            return Response({"message":"person already present"})
+            return Response({"message":False})
         except CustomUser.DoesNotExist:
             serializer = CustomUserSerializer(data=request.data)
             if serializer.is_valid():
@@ -110,7 +110,7 @@ def custom_user_list(request):
                 
                 # token="HEllo"
                 token, created = Token.objects.get_or_create(user=user)
-                return Response({"message":"successfully added into database","token":token.key,"user":serializer.data}, status=status.HTTP_201_CREATED)
+                return Response({"message":True,"token":token.key,"user":serializer.data}, status=status.HTTP_201_CREATED)
             return Response({"error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -414,12 +414,20 @@ def addResultDatatoDatabase(result_data):
 def get_resultValue(resultData):
     totalQuestions=len(resultData)
     correctCount=0
+    skippedCount=0
+    wrongCount=0
+    print("resultData",resultData)
     for eachData in resultData:
-        if(resultData[eachData]["isCorrect"]):
-            print("resultData[eachData][isCorrect]",resultData[eachData]["isCorrect"])
+        if(resultData[eachData]["selectedAnswer"]=="time out"):
+            skippedCount+=1
+        elif(resultData[eachData]["isCorrect"]):
             correctCount+=1
+        else:
+            wrongCount+=1
+
+        
     
-    return {"correctCount":correctCount,"wrongCount":totalQuestions-correctCount}
+    return {"correctCount":correctCount,"wrongCount":wrongCount,"skippedCount":skippedCount}
 
         
 @api_view(["POST"])
@@ -439,7 +447,7 @@ def add_resultData(request):
                 languageId=clientData.get('languageId')
                 level=clientData.get('level')
                 result=0
-                print("resultQuestionList",resultQuestionList)
+                
                 # Create ResultModel object
                 current_question_id=[]
                 for i in resultQuestionList:
@@ -468,7 +476,7 @@ def add_resultData(request):
                     # convertin OrderedDict to list([{'1': {'selectedAnswer': '0x99fffL', 'isCorrect': True}, '2': {'selectedAnswer': 'Integer or Boolean', 'isCorrect': True}}])
                     for item in return_value:
                         answer_value.append(json.loads(json.dumps(item)))
-                        print("answer_value",answer_value)
+                        
                     # existing_question_id_list ([1,2,3])
                     for eachAnswer in answer_value:
                         for key in eachAnswer:
@@ -483,13 +491,13 @@ def add_resultData(request):
 
                     # Check if there are common elements
                     if common_ids:
-                        print("person already completed this quiz:", common_ids)
+                        
                         resultDict=get_resultValue(resultData=resultQuestionList)
                         resultDict["topicName"]=TopicModel.objects.get(id=int(topicId)).topicName
                             # false for person already completed this quiz
                         return Response({"message": False,"data":resultDict})
                     else:
-                        print("new user")
+                        
                         addResultDatatoDatabase(result_data)
                         resultDict=get_resultValue(resultData=resultQuestionList)
                         resultDict["topicName"]=TopicModel.objects.get(id=int(topicId)).topicName
